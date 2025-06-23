@@ -1,0 +1,15 @@
+# python dev env
+
+env
+
+
+# python cache folder 
+__pycache__/
+
+# env variables
+
+.env
+.env.prod
+.env.local
+
+
