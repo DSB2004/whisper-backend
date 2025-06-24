@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     '_auth',
     'user',
     'rest_framework',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +58,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'middleware.LoggerMiddleware',
+    'middleware.JWTMiddleware'
 ]
 
 ROOT_URLCONF = 'whisper.urls'
@@ -140,8 +143,75 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 
+# CELERY BEAT SCHEDULER CONFIGRATIONS
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+
 
 # JWT CONFIGRATION
 
 ALGORITHM = "HS256"
 JWT_SECRET=os.getenv("JWT_SECRET")
+
+
+# SKIP_VERIFICATION
+
+SKIP_VERIFICATION = [
+    ("POST", "/auth/*"),
+]
+
+
+# LOGGER
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} - {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '[{levelname}] {message}',
+            'style': '{',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'logs/app.log',
+            'formatter': 'verbose',
+        },
+    },
+
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'your_app': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+
+# CLOUD STORAGE KEY
+
+CLOUD_PUBLIC_KEY=os.getenv("CLOUD_PUBLIC_KEY")
+CLOUD_PRIVATE_KEY=os.getenv("CLOUD_PUBLIC_KEY")
+CLOUD_URL=os.getenv("CLOUD_URL")

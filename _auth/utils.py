@@ -4,6 +4,9 @@ from whisper import settings
 import secrets
 from enum import Enum, unique
 import json
+import jwt
+import datetime
+
 
 redis_client = redis.StrictRedis.from_url(settings.REDIS_URL, decode_responses=True)
 
@@ -14,9 +17,27 @@ class VerificationAction(Enum):
     PHONE_VERIFICATION = 3
     TWO_FACTOR_AUTH = 4
 
+
+@unique
 class VerificationError(Enum):
     SESSION = 1
     INVALID = 2
+
+
+@unique
+class TokenError(Enum):
+    EXPIRED = 1
+    INVALID = 2
+
+@unique
+class TokenType(Enum):
+    ACCESS = 1
+    REFRESH = 2
+
+
+
+
+
 class PasswordHash:
     @staticmethod
     def hashPassword(password):
@@ -32,6 +53,7 @@ class PasswordHash:
     
 
 class Verification:
+    
     @staticmethod
     def generateCode(email, action):
         code = secrets.token_urlsafe(6) 
@@ -66,21 +88,72 @@ class Verification:
                 "message": "Expired Session"
             }
         
-        redis_client.delete(key)
+        
         if(action!=action_):
              return {
                 "success": False,
                 "code":VerificationError.INVALID,
-                "message": "Expired Session"
+                "message": "Invalid Action"
             }
 
         if(email!=email_):
              return {
                 "success": False,
                 "code":VerificationError.INVALID,
-                "message": "Expired Session"
+                "message": "Invalid Action"
             }
+            
+        redis_client.delete(key)
+        
         return {
             "success": True,
             "message": "Verification successful",
         }
+    
+
+
+class JWT:
+    SECRET_KEY = settings.SECRET_KEY
+    ALGORITHM = settings.ALGORITHM
+
+    @staticmethod
+    def generateToken(payload, expires_in):
+        payload_copy = payload.copy()
+        payload_copy['exp'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=expires_in)
+        return jwt.encode(payload_copy, JWT.SECRET_KEY, algorithm=JWT.ALGORITHM)
+
+    @staticmethod
+    def decodeToken(token):
+        try:
+            token = token.split(' ')[1]  # Bearer <token>
+            decoded = jwt.decode(token, JWT.SECRET_KEY, algorithms=[JWT.ALGORITHM])
+            return {"success": True, "data": decoded}
+        except jwt.ExpiredSignatureError:
+            return {"success": False, "message": "Token has expired", "code": TokenError.EXPIRED}
+        except jwt.InvalidTokenError:
+            return {"success": False, "message": "Invalid token", "code": TokenError.INVALID}
+
+    @staticmethod
+    def refreshTokens(refreshToken):
+        token = JWT.decodeToken(refreshToken)
+
+        if not token["success"]:
+            return token
+        if token["data"]["type"] != TokenType.REFRESH:
+            return {"success": False, "message": "Invalid token", "code": TokenError.INVALID}
+
+        userData = token["data"]
+
+        accessTokenData = {
+            "email": userData["email"],
+            "type": TokenType.ACCESS
+        }
+        refreshTokenData = {
+            "email": userData["email"],
+            "type": TokenType.REFRESH
+        }
+
+        accessToken_ = JWT.generateToken(accessTokenData, 3600 * 24)
+        refreshToken_ = JWT.generateToken(refreshTokenData, 7 * 24 * 3600)
+
+        return {"success": True, "accessToken": accessToken_, "refreshToken": refreshToken_}
