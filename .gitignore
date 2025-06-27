@@ -1,6 +1,7 @@
 # python dev env
 
 env
+logs
 
 
 # python cache folder 
@@ -11,5 +12,6 @@ __pycache__/
 .env
 .env.prod
 .env.local
+
 
 

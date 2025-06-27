@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from django_celery_beat.models import PeriodicTask, CrontabSchedule
 from django.db.utils import OperationalError, ProgrammingError
 from django.core.exceptions import AppRegistryNotReady
 import json
@@ -10,6 +9,7 @@ class UserConfig(AppConfig):
 
     def ready(self):
 
+        from django_celery_beat.models import PeriodicTask, CrontabSchedule
         from .tasks import CRON_JOBS  
 
         try:
