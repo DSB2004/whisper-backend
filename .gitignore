@@ -1,7 +1,7 @@
 # python dev env
 
 env
-
+logs
 
 # python cache folder 
 __pycache__/
@@ -13,3 +13,5 @@ __pycache__/
 .env.local
 
 
+# local model copy 
+minilm_embedder

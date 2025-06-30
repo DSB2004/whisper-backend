@@ -1,3 +1,10 @@
+import joblib
+from sentence_transformers import SentenceTransformer
+
+model=joblib.load("xgb_multioutput_model.pkl")
+embedder=SentenceTransformer('minilm_embedder/')
+
+
 def predict_reasons_try(comment):
     # Step 1: Embed the input comment using the SentenceTransformer
     vec = embedder.encode([comment], convert_to_numpy=True)
@@ -14,3 +21,7 @@ def predict_reasons_try(comment):
         'flagged': int(flagged),
         'reasons': reasons
     }
+
+
+
+
