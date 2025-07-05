@@ -18,6 +18,8 @@ class IndustryType(models.TextChoices):
     NON_PROFIT = "NGO", "Non-profit"
     OTHER = "OTHER", "Other"
 
+
+
 class Gender(models.TextChoices):
     MALE = "M", "Male"
     FEMALE = "F", "Female"
@@ -39,6 +41,7 @@ class EthnicGroup(models.TextChoices):
 
 
 class User(models.Model): 
+    from posts.models import TopicType
     # general info 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email=models.EmailField(unique=True,null=False)
@@ -55,6 +58,7 @@ class User(models.Model):
     null=True
     )
 
+
     # for demographics
     ethnicGroup = models.CharField(
         max_length=10,
@@ -66,11 +70,14 @@ class User(models.Model):
 
 
     # preferences   
-    preferredIndustry = models.CharField(
+    preferredIndustry = models.ManyToManyField(
     max_length=10,
     choices=IndustryType.choices,
     default=IndustryType.OTHER
     )
+
+    preferredTopics = models.ManyToManyField(TopicType, related_name='interested_users', blank=True)
+
     preferredLanguage = models.CharField(max_length=10, default="en")
 
     # status check
