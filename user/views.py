@@ -25,7 +25,7 @@ class UserViewSet(viewsets.ViewSet):
             return error
 
         description = request.data.get("description")
-        industry_type = request.data.get("industryType")
+        industry_type = request.data.get("preferredIndustry")
 
         if not description or not industry_type:
             return Response({"message": "description and industryType required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -79,3 +79,4 @@ class UserViewSet(viewsets.ViewSet):
 
         UpdateProfilePic.updateProfilePic.delay(email=user.email, file=profile_pic.name)
         return Response({'message': 'Profile picture will be updated soon.'}, status=status.HTTP_202_ACCEPTED)
+

@@ -11,10 +11,15 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'username',
             'description',
+            'bio',
             'industryType',
             'profilePic',
             'DOB',
-            'isBanned',
+            'ethnicGroup',
+            'preferredTopic',
+            'preferredLanguage',
+            'country',
+            'gender',
             'createdAt'
         ]
         read_only_fields = ['id', 'flagCount', 'isBanned', 'createdAt', 'updateAt', 'bannedAt']

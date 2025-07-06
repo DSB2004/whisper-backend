@@ -41,44 +41,13 @@ class EthnicGroup(models.TextChoices):
 
 
 class User(models.Model): 
-    from posts.models import TopicType
     # general info 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email=models.EmailField(unique=True,null=False)
     username=models.TextField(null=False,unique=True)
     auth=models.OneToOneField("_auth.Auth", related_name='user_account',on_delete=models.CASCADE,blank=False,null=False)
     description = models.TextField(blank=True, null=True)
-    bio=models.TextField(null=True,blank=True)
-    profilePic=models.URLField(null=True,blank=True,default=None)
-    DOB=models.DateField(null=True,blank=True)
-    gender = models.CharField(
-    max_length=5,
-    choices=Gender.choices,
-    blank=True,
-    null=True
-    )
-
-
-    # for demographics
-    ethnicGroup = models.CharField(
-        max_length=10,
-        choices=EthnicGroup.choices,
-        blank=True,
-        null=True
-    )
-    country = models.CharField(max_length=100, blank=True, null=True)
-
-
-    # preferences   
-    preferredIndustry = models.ManyToManyField(
-    max_length=10,
-    choices=IndustryType.choices,
-    default=IndustryType.OTHER
-    )
-
-    preferredTopics = models.ManyToManyField(TopicType, related_name='interested_users', blank=True)
-
-    preferredLanguage = models.CharField(max_length=10, default="en")
+    avatar=models.URLField(null=True,blank=True,default=None)
 
     # status check
     flagCount = models.PositiveIntegerField(default=0)
@@ -109,6 +78,44 @@ class User(models.Model):
             # notify via email/FCM here
 
         super().save(*args, **kwargs)
+
+
+
+class UserPreferredIndustry(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    industry = models.CharField(
+        max_length=20,
+        choices=IndustryType.choices,
+        default=IndustryType.OTHER
+    )
+    user = models.ForeignKey(
+        User,
+        related_name="user_preferred_industry",
+        on_delete=models.CASCADE
+    )
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updateAt = models.DateTimeField(auto_now=True)
+
+
+
+
+class UserPreferredTopic(models.Model):
+    from posts.models import TopicType
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    topic = models.CharField(
+        max_length=30,  # adjust if needed
+        choices=TopicType.choices,
+        default=TopicType.GENERAL
+    )
+    user = models.ForeignKey(
+        User,
+        related_name="user_preferred_topic",
+        on_delete=models.CASCADE
+    )
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updateAt = models.DateTimeField(auto_now=True)
+
 
 
 
